@@ -3,11 +3,13 @@
 import axios from "axios";
 import Layout from "../../layouts/main";
 import PageHeader from "../../components/page-header";
+import ChambreEtat from "./chambre-etat";
 
 export default {
     components: {
         Layout,
         PageHeader,
+        ChambreEtat
     },
     props: {
         id: {
@@ -34,7 +36,7 @@ export default {
         axios.get('/api/chambres')// axios.get('api/regionbyrendement')
             .then(response => {
                 this.records = response.data
-            }) .catch(error => console.log(error))
+            }) .catch(error => console.log(error));
     },
 
 }
@@ -52,17 +54,7 @@ export default {
                         <div class="card-block bg-c-pink text-white">
                         <h5> {{item.numero}}</h5>
                     </div>
-                    <div class="card-footer text-center">
-                         <div class="row">
-                            <div class="col-6 b-r-default">
-                                <span class="text-muted m-b-0">Temp: -5°C</span>
-                            </div>
-                             <div class="col-6 b-r-default">
-                                 <span class="text-muted m-b-0">Hum: 50%</span>
-                             </div>
-                        </div>
-
-                    </div>
+                    <ChambreEtat :id=item.id />
                 </div>
                 </a>
             </div>
