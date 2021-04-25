@@ -17,7 +17,7 @@ export default {
             records:[{
                 id: '',
                 nom: '',
-                image: '', // image de la régions
+                image: '', // image de des chambres
             }] ,
             title: "Acceuil",
             items: [
@@ -36,8 +36,5 @@ export default {
 </script>
 
 <template>
-    <Layout>
-        <PageHeader :title="title" :items="items" />
-        <regions id=""/>
-    </Layout>
+    <chambres id=""/>
 </template>

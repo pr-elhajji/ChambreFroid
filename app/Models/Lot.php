@@ -16,7 +16,8 @@ class Lot extends Model
 
     protected $fillable = [
         'numero',
-        'capacite',
+        'capacite-max',
+        'Quantite',
         'image',
         'chambre_id'
     ];

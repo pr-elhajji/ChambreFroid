@@ -13,6 +13,10 @@ Vue.component("pages-maintenance", require("./utility/maintenance").default);
 //Tableau de bord
 Vue.component("dashboard", require("./dashboard/dashboard-simple").default);
 
+// Chambre
+Vue.component("chambres", require("./chambres/chambres-grid").default);
+Vue.component("chambre-details", require("./chambres/chambre-details").default);
+
 //Users
 Vue.component( "users-profile",require("./users/users-profile").default);
 
@@ -22,5 +26,4 @@ Vue.component("forgot-password", require("./account/forgot-password").default);
 
 Vue.component("reset-password", require("./account/reset-password").default);
 
-Vue.component("regions-grid", require("./regions/regions-grid"));
 

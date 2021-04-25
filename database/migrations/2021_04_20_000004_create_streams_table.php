@@ -18,8 +18,8 @@ class CreateStreamsTable extends Migration
             $table->float('temperature');
             $table->float('humedite');
             $table->integer('etat_porte'); // Trois valeur -1 (defaut), 0(arrêt), 1 marche
-            $table->integer('etat_moteur');
-            $table->integer('etat_ventilateur');
+            $table->integer('etat_compresseur');
+            $table->integer('etat_evaporateur');
             $table->string('carte_code');
             $table->foreign('carte_code')->references('code')->on('cartes');
             $table->timestamps();

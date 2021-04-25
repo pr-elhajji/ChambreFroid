@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMachinesTable extends Migration
+class CreateDetailsLotsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class CreateMachinesTable extends Migration
     public function up()
     {
         Schema::create('detailslots', function (Blueprint $table) {
-            $table->float('quantite')->nullable();            
+            $table->float('quantite')->nullable();
             $table->foreignId('lot_id');
             $table->foreign('lot_id')->references('id')->on('lots');
 

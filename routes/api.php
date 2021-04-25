@@ -22,7 +22,10 @@ Route::post('/carte/add', ['uses' => 'CarteController@create_carte']);
 Route::resource('carte', RegionsController::class);
 
 //Chambres
-Route::resource('chambres', EmplacementController::class);
+Route::resource('chambres', ChambreController::class);
+
+
+
 
 //lots
 Route::resource('lots', ClientController::class);
