@@ -32,11 +32,21 @@ export default {
             ]
         };
     },
-    mounted(){
-        axios.get('/api/chambres')// axios.get('api/regionbyrendement')
-            .then(response => {
-                this.records = response.data
-            }) .catch(error => console.log(error));
+    created(){
+        this.getData();
+    },
+    /*mounted() {
+        // TODO requete le taux d'auccupation ou calculer le taux = 100* Taux réel/capacité max
+        // TODO Récupérer les températeure et l'humidité de la dernière journées
+        this.interval = setInterval(this.getData, 60000);
+    },*/
+    methods:{
+        getData(){
+            axios.get('/api/chambres/')// axios.get('api/regionbyrendement')
+                .then(response => {
+                    this.records = response.data;
+                }).catch(error => console.log(error));
+        }
     },
 
 }
@@ -54,7 +64,7 @@ export default {
                         <div class="card-block bg-c-pink text-white">
                         <h5> {{item.numero}}</h5>
                     </div>
-                    <ChambreEtat :id=item.id />
+                    <ChambreEtat :id=String(item.id) />
                 </div>
                 </a>
             </div>

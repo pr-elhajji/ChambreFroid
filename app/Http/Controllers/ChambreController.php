@@ -45,12 +45,24 @@ class chambreController extends Controller
             ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
             ->join('streams', 'streams.carte_code', '=', 'cartes.code')
             ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
-            ->select( 'chambres.numero','chambres.capacite','chambres.image',DB::raw('sum(lots.capacite) as capacite_reel'),
+            ->select( 'chambres.numero','chambres.capacite','chambres.image',
                 'temperature', 'humedite', 'etat_porte', 'etat_compresseur', 'etat_evaporateur','streams.created_at' )
             ->where('chambres.id','=' ,$id)
             ->orderByDesc('streams.created_at')->first();
 
         return response()->json($chambres,201);
+    }
+
+    public function getCapacite($id)
+    {
+        $chambres = DB::table('chambres')
+            ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
+            ->select( 'chambres.numero','chambres.capacite',DB::raw('100*sum(lots.capacite)/chambres.capacite as taux'), DB::raw('sum(lots.capacite) as capcite_reel'))
+            ->where('chambres.id','=' ,$id)
+            ->get();
+
+        return response()->json($chambres,201);
+
     }
 
     /**

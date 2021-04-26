@@ -7,16 +7,18 @@ export default {
         id: {
             type: String,
             default: ""
-        },
-        data: {
-            type: Object,
-            default: {}
         }
     },
     data() {
         return {
-            records: {},
-            series: [50],
+            records: null,
+            statData: null,
+            series: [
+                {
+                    name: "",
+                    data: []
+                }
+            ], //TODO automatisation
             chartOptions: {
                 chart: {
                     height: 250,
@@ -62,16 +64,50 @@ export default {
             },
         }
     },
+    watch: {
+        series: function () {
+            this.interval = setInterval(this.getData, 60000);
+        }
+    },
+    created(){
+        this.getData();
+    },
     mounted() {
         // TODO requete le taux d'auccupation ou calculer le taux = 100* Taux réel/capacité max
         // TODO Récupérer les températeure et l'humidité de la dernière journées
+        this.interval = setInterval(this.getData, 60000);
+
+        /*setInterval(function(){
+
+        }, 3000);*/
+
+
+        axios.get("/api/chambres/capacite/"+this.id)  // 1 par semaine
+            .then(response => {
+                let statData=null
+                statData= response.data
+                this.series=[
+                    statData.map(ele => ele.taux)
+                ];
+            })
+            .catch(error => console.log(error));
+
+    },
+    methods:{
+        getData(){
+
+            axios.get('/api/chambres/' + this.id)// axios.get('api/regionbyrendement')
+                .then(response => {
+                    this.records = response.data;
+                }).catch(error => console.log(error));
+        }
+
     }
 }
 
 </script>
 
 <template>
-
     <div class="card">
         <div class="card-body">
             <div class="d-flex align-items-start">
@@ -84,10 +120,10 @@ export default {
             <div class="row">
                 <div class="col-xl-5">
                     <div class="text-center p-4 border-end">
-                            <img class="rounded-circle avatar-lg" :src="'/images/chambres/'+data.image" alt />
+                        <img class="rounded-circle avatar-lg" :src="'/images/chambres/'+records.image" alt />
 
                         <h5 class="font-size-15">
-                            <a href="javascript: void(0);" class="text-dark">{{data.numero}}</a>
+                            <a href="javascript: void(0);" class="text-dark">{{records.numero}}</a>
                         </h5>
                     </div>
 
@@ -99,18 +135,30 @@ export default {
         </div>
         <div class="card-footer bg-transparent border-top">
             <div class="contact-links d-flex font-size-20">
-                <div class="flex-fill">
+                <div v-if="this.records.etat_evaporateur ===1"  class="flex-fill">
                     <img class="rounded-circle avatar-sm" src="/images/gifs-machines/ventilateur-marche.gif" />
                 </div>
-                <div class="flex-fill">
+                <div v-else class="flex-fill">
+                    <img class="rounded-circle avatar-sm" src="/images/gifs-machines/ventilateur-arret.png" />
+                </div>
+
+                <div v-if="this.records.etat_porte ===1" class="flex-fill">
                     <img class="rounded-circle avatar-sm" src="/images/gifs-machines/porte-fermee.png" />
                 </div>
-                <div class="flex-fill">
+                <div v-else class="flex-fill">
+                    <img class="rounded-circle avatar-sm" src="/images/gifs-machines/porte-ouvetre.png" />
+                </div>
+
+                <div v-if="this.records.etat_compresseur ===1" class="flex-fill">
                     <img class="rounded-circle avatar-sm" src="/images/gifs-machines/moteur-marche.png" />
+                </div>
+                <div v-else class="flex-fill">
+                    <img class="rounded-circle avatar-sm" src="/images/gifs-machines/moteur-arret.png" />
                 </div>
             </div>
         </div>
     </div>
+
 
 
 </template>

@@ -12,13 +12,17 @@ export default {
     },
     data (){
         return {
+            records:null,
             showModal: false,
             lots: {
                 numero: "",
                 vareite:"",
                 quantite:0
 
-            }
+            },
+            selected: "",
+            selected2: "",
+            submitted: false,
         }
     },
 }

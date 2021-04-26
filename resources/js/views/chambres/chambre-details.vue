@@ -28,10 +28,10 @@ export default {
         }
     },
     mounted() {
-        axios.get('/api/chambres/'+this.id)// axios.get('api/regionbyrendement')
+        /*axios.get('/api/chambres/'+this.id)// axios.get('api/regionbyrendement')
             .then(response => {
                 this.records = response.data
-            }) .catch(error => console.log(error))
+            }) .catch(error => console.log(error))*/
     },
 };
 </script>
@@ -40,13 +40,17 @@ export default {
     <Layout>
         <!-- start page title -->
         <div class="row">
-            <ChambreInfo :id=this.id :data=this.records />
+            <div class="col-sm-6">
+                <ChambreInfo :id=this.id />
+            </div>
+            <div class="col-sm-6">
+                <ChambreEtatTempHum :id=this.id />
+            </div>
+
         </div>
         <!-- end page title -->
 
-        <div class="row">
-            <ChambreEtatTempHum :id=this.id />
-        </div>
+
         <!-- end row -->
         <div class="row">
             <ChambreLots :id=this.id :data=this.records />

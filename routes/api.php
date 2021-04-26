@@ -23,6 +23,7 @@ Route::resource('carte', RegionsController::class);
 
 //Chambres
 Route::resource('chambres', ChambreController::class);
+Route::get('/chambres/capacite/{id}', ['uses' => 'ChambreController@getCapacite']);
 
 
 
