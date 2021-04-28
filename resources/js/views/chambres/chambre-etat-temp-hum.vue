@@ -5,11 +5,13 @@ import axios from "axios";
 export default {
     data() {
         return {
-            isActiveWeek: true,
-            isActiveMonth: false,
-            isActiveYear: false,
+            interval:1400,
             statData: null,
             series: [
+                {
+                    name: "",
+                    data: []
+                },
                 {
                     name: "",
                     data: []
@@ -17,40 +19,54 @@ export default {
             ],
             chartOptions: {
                 chart: {
-                    stacked: true,
-                    toolbar: {
-                        show: false
-                    },
+                    type: 'area',
+                    stacked: false,
+                    height: 350,
                     zoom: {
-                        enabled: true
-                    }
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: "15%",
-                        // endingShape: "rounded"
+                        type: 'x',
+                        enabled: true,
+                        autoScaleYaxis: true
+                    },
+                    toolbar: {
+                        autoSelected: 'zoom'
                     }
                 },
                 dataLabels: {
                     enabled: false
                 },
-                xaxis: {
-                    categories: []
-                },
-                colors: ["#556ee6", "#f1b44c", "#34c38f"],
-                legend: {
-                    position: "bottom"
+                markers: {
+                    size: 0,
                 },
                 fill: {
-                    opacity: 1
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        inverseColors: false,
+                        opacityFrom: 0.5,
+                        opacityTo: 0,
+                        stops: [0, 90, 100]
+                    },
                 },
-                stroke: {
-                    show: true,
-                    width: 2,
-                    colors: ['transparent']
+                yaxis: {
+                    labels: {
+                        formatter: function (val) {
+                            return (val / 1000000).toFixed(0);
+                        },
+                    },
                 },
-            }
+                xaxis: {
+                    type: 'datetime',
+                    categories: []
+                },
+                tooltip: {
+                    shared: false,
+                    y: {
+                        formatter: function (val) {
+                            return (val / 1000000).toFixed(0)
+                        }
+                    }
+                }
+            },
         };
     },
     props: {
@@ -61,77 +77,35 @@ export default {
     },
 
     methods: {
-        /* getRendementByWeek: function () {
-             this.isActiveWeek= true;
-             this.isActiveMonth= false;
-             this.isActiveYear= false;
-             axios.get("/api/Chambres/"+this.id)  // 1 par semaine
+        getData: function () {
+            let url="/api/chambres/temphum/"+this.id+"/"+this.interval
+             axios.get(url)  // 1 par semaine
                  .then(response => {
                      let statData=null
                      statData= response.data
                      this.series=[
                          {
-                             name: "Rendements par semaine",
-                             data: statData.map(ele => ele.rendement)
+                             name: "Temp",
+                             data: statData.map(ele => ele.temperature)
+                         },
+                         {
+                             name: "Hum",
+                             data: statData.map(ele => ele.humedite)
                          }
                      ];
                      this.chartOptions = {...this.chartOptions, ...{
                              xaxis: {
-                                 categories:statData.map(ele => ele.jour)
+                                 categories:statData.map(ele => ele.created_at)
                              }
                          }}
                  })
                  .catch(error => console.log(error));
          },
-         getRendementByMonth: function () {
-             this.isActiveWeek= false;
-             this.isActiveMonth= true;
-             this.isActiveYear= false;
-             axios.get("/api/Chambres/rendementstat/"+this.id+"/2")  // 1 par semaine
-                 .then(response => {
-                     var statData = response.data
-                     this.series=[
-                         {
-                             name: "Rendements par mois",
-                             data: statData.map(ele => ele.rendement)
-                         }
-                     ];
-                     this.chartOptions = {...this.chartOptions, ...{
-                             xaxis: {
-                                 categories:statData.map(ele => ele.jour)
-                             }
-                         }}
-                 })
-                 .catch(error => console.log(error));
-         },
-         getRendementByYear: function () {
-             this.isActiveWeek= false;
-             this.isActiveMonth= false;
-             this.isActiveYear= true;
-             axios.get("/api/Chambres/rendementstat/"+this.id+"/3")  // 1 par semaine
-                 .then(response => {
-                     var statData = response.data
-                     this.series=[
-                         {
-                             name: "Rendements par mois",
-                             data: statData.map(ele => ele.rendement)
-                         }
-                     ];
-                     this.chartOptions = {...this.chartOptions, ...{
-                             xaxis: {
-                                 categories:statData.map(ele => ele.mois)
-                             }
-                         }}
-                 })
-                 .catch(error => console.log(error));
-         },*/
+
 
     },
     mounted() {
-        axios.get('/api/chambres/'+this.id)// axios.get('api/regionbyrendement')
-            .then(response => {
-                this.records = response.data
-            }) .catch(error => console.log(error))
+        this.getData();
     }
 }
 </script>
@@ -139,14 +113,7 @@ export default {
     <div class="card">
         <div class="card-body">
             <h4 class="card-title mb-4">Température & Humidité</h4>
-            <apexchart
-                class="apex-charts"
-                type="bar"
-                dir="ltr"
-                height="362"
-                :series="series"
-                :options="chartOptions"
-            ></apexchart>
+            <apexchart type="area" height="350" :options="chartOptions" :series="series"></apexchart>
         </div>
     </div>
 </template>

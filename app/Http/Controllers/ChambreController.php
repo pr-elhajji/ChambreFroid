@@ -53,17 +53,7 @@ class chambreController extends Controller
         return response()->json($chambres,201);
     }
 
-    public function getCapacite($id)
-    {
-        $chambres = DB::table('chambres')
-            ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
-            ->select( 'chambres.numero','chambres.capacite',DB::raw('100*sum(lots.capacite)/chambres.capacite as taux'), DB::raw('sum(lots.capacite) as capcite_reel'))
-            ->where('chambres.id','=' ,$id)
-            ->get();
 
-        return response()->json($chambres,201);
-
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -129,49 +119,6 @@ class chambreController extends Controller
         return response()->json($chambre, 201);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function indexByRendement(Request $request)
-    {
-        /*$validator = Validator::make($request->all(), [
-            'date_begin' => 'required|date|date_format:d-m-Y',
-            'date_end' => 'required|date|date_format:d-m-Y',
-        ]);
-        if ($validator->fails()) {
-            return  response()->json($validator->errors(), 401);
-        }
-        $dateBegin=$request->input('date_begin');
-        $dateEnd=$request->input('date_end');*/
-
-        $chambres = DB::table('chambres')
-            ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
-            ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-            ->select('chambres.*', DB::raw('sum(streams.count) as rendement'))
-            //->whereBetween('streams.created_at', [$dateBegin, $dateEnd]) //TODO à corriger en introduissant les dates
-            ->groupBy('chambres.id')
-            ->get();
-        return response()->json($chambres,201);
-    }
-    /**
-     * retourner la liste des chambres par client
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function indexByClient($id_client)
-    {
-        $chambres = DB::table('chambres')
-            ->join('operateurs','chambres.operateur_id', '=', 'operateurs.id')
-            ->join('cartes','cartes.chambre_id', '=', 'chambres.id')
-            ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-            ->select('chambres.*','operateurs.nom as nomoperateur','operateurs.prenom as prenomoperateur', DB::raw('sum(streams.count) as rendement'))
-            ->where('client_id','=' ,$id_client) //TODO à corriger en introduissant les dates
-            ->get();
-        return response()->json($chambres,201);
-    }
 
 
     /**
@@ -263,7 +210,43 @@ class chambreController extends Controller
 
     }
 
+    public function getCapacite($id)
+    {
+        $chambres = DB::table('chambres')
+            ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
+            ->select( 'chambres.numero','chambres.capacite',DB::raw('100*sum(lots.capacite)/chambres.capacite as taux'), DB::raw('sum(lots.capacite) as capcite_reel'))
+            ->where('chambres.id','=' ,$id)
+            ->get();
 
+        return response()->json($chambres,201);
+    }
 
+    public function getTempHum($id,$interval)
+    {
+        $newTime = Carbon::now()->subMinutes($interval);
+        $chambres = DB::table('chambres')
+            ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+            ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+            ->select( 'temperature', 'humedite','streams.created_at')
+            ->where('streams.created_at','>=' ,$newTime)
+            ->orderByDesc('streams.created_at')
+            ->get();
+        return response()->json($chambres,201);
+    }
+    public function getLots($id)
+    {
+        $chambres = DB::table('chambres')
+            ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
+            ->join('varietes', 'lots.variete_id', '=', 'varietes.id')
+            ->select( 'chambres.id', 'lots.*','varietes.libelle')
+            ->where('chambres.id','=' ,'1')
+            ->get();
 
+        return response()->json($chambres,201);
+    }
+
+    // ajouter un lot à chambre
+    public function addLots(){
+
+    }
 }

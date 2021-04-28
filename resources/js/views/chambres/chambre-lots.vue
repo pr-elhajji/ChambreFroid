@@ -1,4 +1,6 @@
 <script>
+import axios from "axios";
+
 export default {
     props: {
         id: {
@@ -12,7 +14,7 @@ export default {
     },
     data (){
         return {
-            records:null,
+            records: {},
             showModal: false,
             lots: {
                 numero: "",
@@ -24,6 +26,18 @@ export default {
             selected2: "",
             submitted: false,
         }
+    },
+    methods:{
+        getLots : function() {
+            let url='/api/chambres/lots/' + this.id;
+            axios.get(url)
+                .then(response => {
+                    this.records = response.data;
+                }).catch(error => console.log(error));
+        }
+    },
+    mounted() {
+        this.getLots();
     },
 }
 </script>
@@ -37,9 +51,9 @@ export default {
                     <b-button
                         class="btn btn-success ms-auto"
                         @click="showModal = true"
-                    >Ajouter un lot</b-button
-                    >
+                    >Ajouter un lot</b-button>
                 </div>
+                <!-- Model -->
                 <b-modal title="Ajouter un lot" v-model="showModal" hide-footer>
                     <form @submit.prevent="handleSubmit">
                         <div class="row">
@@ -110,33 +124,31 @@ export default {
                         </div>
                     </form>
                 </b-modal>
-
+                <!-- End model -->
                 <div class="table-responsive">
                     <table class="table table-centered table-nowrap table-hover align-middle">
                         <thead class="table-light">
                         <tr>
-                            <th scope="col" style="width: 70px;">Numéro</th>
+                            <th scope="col" style="width: 70px;">Référence</th>
                             <th scope="col">Varieté</th>
                             <th scope="col">Quantité</th>
                             <th scope="col">Action</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="list in records" :key="list.id">
+                        <tr v-for="ele in records" :key="ele.id">
                             <td>
-                                <span>{{list.numero}}</span>
-                                <div v-if="list.image">
-                                    <img class="rounded-circle avatar-xs" :src="`${list.image}`" alt />
+                                <span>{{ele.numero}}</span>
+                                <div v-if="ele.image">
+                                    <img class="rounded-circle avatar-xs" :src="`images/lots/${ele.image}`" alt />
                                 </div>
                             </td>
                             <td>
                                 <h5 class="font-size-14 mb-1">
-                                    <a href="#" class="text-dark">{{list.variete}}</a>
+                                    <a href="#" class="text-dark">{{ele.libelle}}</a>
                                 </h5>
-                                <p class="text-muted mb-0">{{list.qualtite}}</p>
                             </td>
-                            <td>{{list.email}}</td>
-                            <td>125</td>
+                            <td> <p class="text-muted mb-0">{{ele.capacite}}</p></td>
                             <td>
                                 <ul class="list-inline font-size-20 contact-links mb-0">
                                     <li class="list-inline-item px-2">
@@ -146,7 +158,7 @@ export default {
                                     </li>
                                     <li class="list-inline-item px-2">
                                         <a v-b-tooltip.hover title="Supprimer">
-                                            <i class="bx bx-layer-minus"></i>
+                                            <i class="bx bx-basket"></i>
                                         </a>
                                     </li>
                                 </ul>

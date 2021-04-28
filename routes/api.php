@@ -24,9 +24,8 @@ Route::resource('carte', RegionsController::class);
 //Chambres
 Route::resource('chambres', ChambreController::class);
 Route::get('/chambres/capacite/{id}', ['uses' => 'ChambreController@getCapacite']);
-
-
-
+Route::get('/chambres/temphum/{id}/{interval}', ['uses' => 'ChambreController@getTempHum']);
+Route::get('/chambres/lots/{id}',['uses'=>'ChambreController@getLots']);
 
 //lots
 Route::resource('lots', ClientController::class);
@@ -36,7 +35,6 @@ Route::resource('varietes', MachineController::class);
 
 //users
 Route::get('/users/profile/{id}', [App\Http\Controllers\UsersController::class, 'show']);
-
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

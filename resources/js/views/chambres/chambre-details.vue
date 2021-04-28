@@ -38,22 +38,24 @@ export default {
 
 <template>
     <Layout>
-        <!-- start page title -->
+        <!-- row -->
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-12">
                 <ChambreInfo :id=this.id />
             </div>
-            <div class="col-sm-6">
+        </div>
+        <!-- end row -->
+        <!-- row -->
+        <div class="row">
+            <div class="col-sm-12">
                 <ChambreEtatTempHum :id=this.id />
             </div>
-
         </div>
-        <!-- end page title -->
-
-
         <!-- end row -->
         <div class="row">
-            <ChambreLots :id=this.id :data=this.records />
+            <div class="col-sm-12">
+             <ChambreLots :id=this.id :data=this.records />
+            </div>
         </div>
     </Layout>
 </template>
