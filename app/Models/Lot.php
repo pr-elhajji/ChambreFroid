@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\DetailsLot;
+
+
 class Lot extends Model
 {
     use HasFactory;
@@ -17,8 +20,12 @@ class Lot extends Model
     protected $fillable = [
         'numero',
         'capacite-max',
-        'Quantite',
+        'quantite',
         'image',
-        'chambre_id'
+        'chambre_id',
+        'variete_id',
+        'date-entree',
+        'date-sortie'
     ];
+
 }

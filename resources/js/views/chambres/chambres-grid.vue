@@ -35,11 +35,7 @@ export default {
     created(){
         this.getData();
     },
-    /*mounted() {
-        // TODO requete le taux d'auccupation ou calculer le taux = 100* Taux réel/capacité max
-        // TODO Récupérer les températeure et l'humidité de la dernière journées
-        this.interval = setInterval(this.getData, 60000);
-    },*/
+    
     methods:{
         getData(){
             axios.get('/api/chambres/')// axios.get('api/regionbyrendement')
@@ -62,7 +58,9 @@ export default {
                 <a v-bind:href="'/chambre/details/'+item.id"  class="">
                     <div class="card text-center">
                         <div class="card-block bg-c-pink text-white">
+                        <br/>
                         <h5> {{item.numero}}</h5>
+                        <p></p>
                     </div>
                     <ChambreEtat :id=String(item.id) />
                 </div>

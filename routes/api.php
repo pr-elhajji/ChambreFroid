@@ -18,23 +18,30 @@ use Illuminate\Support\Str;
 Route::post('/data/add', ['uses' => 'CarteController@setdata']);
 Route::post('/carte/add', ['uses' => 'CarteController@create_carte']);
 
-//Clients
-Route::resource('carte', RegionsController::class);
-
 //Chambres
 Route::resource('chambres', ChambreController::class);
 Route::get('/chambres/capacite/{id}', ['uses' => 'ChambreController@getCapacite']);
+Route::get('/capacites/all', ['uses' => 'ChambreController@getCapaciteAll']);
 Route::get('/chambres/temphum/{id}/{interval}', ['uses' => 'ChambreController@getTempHum']);
 Route::get('/chambres/lots/{id}',['uses'=>'ChambreController@getLots']);
+Route::post('/chambres/addlots/',['uses'=>'ChambreController@addLots']); //add lot
+
+Route::get('/chambres/alerts/{id}/{interval}', ['uses' => 'ChambreController@getAlerts']); //alerte
+Route::get('/machines/temphumstat/{id}/{typestat}', ['uses'=> 'chambreController@getSate']); //stat TEmp Hum tdb
+
 
 //lots
-Route::resource('lots', ClientController::class);
+Route::resource('lots', LotController::class);
 
 //Varietes
-Route::resource('varietes', MachineController::class);
+Route::resource('varietes', VarieteController::class);
 
 //users
 Route::get('/users/profile/{id}', [App\Http\Controllers\UsersController::class, 'show']);
+
+//repports
+Route::post('/raports/find/', [App\Http\Controllers\ReportController::class, 'find']);
+
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

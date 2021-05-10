@@ -16,8 +16,10 @@ class CreateLotsTable extends Migration
         Schema::create('lots', function (Blueprint $table) {
             $table->id();
             $table->string('numero');
-            $table->float('capacite-max');
+            $table->float('capacite-max')->nullable();
             $table->float('Quantite');
+            $table->dateTime('date-entree')->nullable();
+            $table->dateTime('date-sortie')->nullable();
             $table->string('image')->nullable();
             $table->timestamps();
 

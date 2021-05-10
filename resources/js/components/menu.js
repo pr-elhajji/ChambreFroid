@@ -13,51 +13,19 @@ export const menuItems = [
     {
         id: 3,
         label: "Tableau de bord",
-        icon: "bx-tachometer",
+        icon: "bxs-bar-chart-alt-2",
         link: "/dashboard"
     },
     {
         id: 8,
         label: "Rapports",
-        icon: "bx:bxs-widget",
-        link: "/#"
+        icon: "bx-receipt",
+        link: "/report"
     },
     {
         id: 9,
         label: "Configuration",
-        icon: "bx:bxs-widget",
-        link: "/#",
-        subItems: [
-            {
-                id: 10,
-                label: "Chambres",
-                link: "javascript: void(0);",
-                parentId: 9
-            },
-            {
-                id: 11,
-                label: "Lots",
-                link: "javascript: void(0);",
-                parentId: 9
-            },
-            {
-                id: 12,
-                label: "Variétés",
-                link: "javascript: void(0);",
-                parentId: 9
-            },
-            {
-                id: 13,
-                label: "Alerts",
-                link: "javascript: void(0);",
-                parentId: 9
-            },
-            {
-                id: 13,
-                label: "Cartes",
-                link: "javascript: void(0);",
-                parentId: 9
-            }
-        ]
+        icon: "bx bxs-wrench",
+        link: "/configuration"
     }
 ];

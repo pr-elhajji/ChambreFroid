@@ -16,7 +16,8 @@ class VarieteController extends Controller
      */
     public function index()
     {
-        //
+        $variets = Variete::all();
+        return response()->json($variets,201);
     }
 
     /**

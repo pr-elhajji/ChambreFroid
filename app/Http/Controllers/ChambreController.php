@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Chambre;
+use App\Models\Lot;
+
 use Illuminate\Http\Request\validate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +46,7 @@ class chambreController extends Controller
         $chambres = DB::table('chambres')
             ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
             ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-            ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
+            ->leftjoin('lots', 'lots.chambre_id', '=', 'chambres.id')
             ->select( 'chambres.numero','chambres.capacite','chambres.image',
                 'temperature', 'humedite', 'etat_porte', 'etat_compresseur', 'etat_evaporateur','streams.created_at' )
             ->where('chambres.id','=' ,$id)
@@ -75,7 +77,42 @@ class chambreController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $rules = [
+                'numero' => 'string|unique:App\Models\Chambre',
+                'capacite' => 'numeric',
+                'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        ];
+        $messages = [
+            "numero.unique" => "La référence doit être unique",
+                "capacite.numeric" => "valuer numérique!",
+                "image.mimes" => "images accetpées:jpeg,png,jpg,gif,svg"
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response($validator->errors(), 400);
+        }
+        $imageName='';
+        if (!is_null($request->image)){
+            $imageName = time() . '.' . $request->image->extension();
+            //TODO supprimer le fichier puis ajouter le nouveau
+            $request->image->move(public_path('images/chambres'), $imageName);
+        }
+        $chambre = Chambre::find($id);
+        if (!is_null($request->numero))
+                $chambre->numero=$request->numero ;
+        if (!is_null($request->capacite))
+            $chambre->capacite=$request->capacite;
+
+        $chambre->image= $imageName;
+        $chambre->save();
+        return response()->json(
+           [
+              'success' => true,
+              'message' => 'modifiée avec succes'
+           ]
+        );
     }
 
     /**
@@ -86,7 +123,11 @@ class chambreController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $chambre = Chambre::find($id);
+        $chambre->delete();
+        return response()->json([
+        'message' => 'Supprimées avec succès!'
+        ]);
     }
 
     /**
@@ -95,131 +136,79 @@ class chambreController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(chambre $request)
+    public function store(Request $request)
     {
-        //TODO à verifier le validation
-        /* $validator = Validator::make($request->all(), [
-                  'marque' => 'required|string|max:255',
-                                    'serie' => 'required|string|max:255',
-                                        'model' => 'required|string|max:255',
-                                        'format' => 'required|string|max:255',
-                                        'cnv' => 'string|max:255',
-                                        'date_fabrication' => 'string|max:255',
-                                        'compresseur' => 'string|max:255',
-                                        'local' => 'string|max:255',
-                                        'image' => 'string|max:255',
-                                        'temperature' => 'string|max:255',
-                                        'date_installation' => 'string|max:255',
-      ]);
-      if ($validator->fails()) {
-                     return  response()->json($validator->errors(), 401);
-                 }*/
-        $chambre = $request;
-        $chambre->save();
-        return response()->json($chambre, 201);
-    }
 
+         //TODO à verifier le validation
+         $rules = [
+            'numero' => 'required|string|unique:App\Models\Chambre',
+            'capacite' => 'required|numeric',
+            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+        ];
+        $messages = [
+            "numero.unique" => "La référence doit être unique",
+            "capacite.required" => "Champ obligatoire",
+            "image.mimes" => "images accetpées:jpeg,png,jpg,gif,svg"
+        ];
 
+        $validator = Validator::make($request->all(), $rules, $messages);
 
-    /**
-     * retourner la liste des chambres par client
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function RendementStat($id,$typestat)
-    {
-        /* $validator = Validator::make($request->all(), [
-             'id' => 'required|int',
-             'typestat' => 'required|int',
-         ]);
-         if ($validator->fails()) {
-             return  response()->json($validator->errors(), 401);
-         }
-         $idchambre=$request->input('id');
-         $TypeStat=$request->input('typestat');*/
-        $idchambre=$id;
-        $TypeStat=$typestat;
-        $now = Carbon::now();
-        if ($TypeStat==0){  // 0 statistiques du jour
-
-
-
-        }elseif  ($TypeStat==1) // Statistique de la semaine en cours
-        {
-            DB::statement("SET lc_time_names = 'fr_FR'");
-            $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
-            $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
-            $statistiques = DB::table('chambres')
-                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
-                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-                ->select(DB::raw('dayname(streams.created_at) as jour'), DB::raw('sum(streams.count) as rendement'))
-                ->whereBetween('streams.created_at', [$weekStartDate, $weekEndDate])
-                ->where('chambres.id','=', $idchambre)
-                ->groupBy(DB::raw('day(streams.created_at)'))
-                ->get();
-
-            return response()->json($statistiques,201);
+        if ($validator->fails()) {
+            return response($validator->errors(), 400);
         }
-        elseif  ($TypeStat==2) // Statistique du mois en  par jour
-        {
-            DB::statement("SET lc_time_names = 'fr_FR'");
-            $current_month = Carbon::now()->month;
-            $statistiques = DB::table('chambres')
-                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
-                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-                ->select(DB::raw('DAYOFMONTH(streams.created_at) as jour'), DB::raw('sum(streams.count) as rendement'))
-                ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
-                ->where('chambres.id','=', $idchambre)
-                ->groupBy(DB::raw('day(streams.created_at)'))
-                ->get();
-            return response()->json($statistiques,201);
-
+        $imageName='';
+        if (!is_null($request->image)){
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/chambres'), $imageName);
         }
-        elseif  ($TypeStat==4) // Statistique du mois en cours par semaine
-        {
-            $current_month = Carbon::now()->month;
-            $statistiques = DB::table('chambres')
-                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
-                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-                ->select(DB::raw('week(streams.created_at,1) as semaine'), DB::raw('sum(streams.count) as rendement'))
-                ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
-                ->where('chambres.id','=', $idchambre)
-                ->groupBy(DB::raw('week(streams.created_at,1)'))
-                ->get();
-            return response()->json($statistiques,201);
+        Chambre::updateOrCreate(
+            [
+              'id' => $request->id
+            ],
+            [
+              'numero' => $request->numero,
+              'capacite' => $request->capacite,
+              'image'=> $imageName
+            ]
+          );
 
-        }
-        elseif  ($TypeStat==3) // Statistique de l'annee en cours
-        {
-
-            DB::statement("SET lc_time_names = 'fr_FR'");
-            $current_year = Carbon::now()->year;
-            $statistiques = DB::table('chambres')
-                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
-                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
-                ->select(DB::raw('MONTHNAME(streams.created_at) as mois'), DB::raw('sum(streams.count) as rendement'))
-                ->where(DB::raw('year(streams.created_at)'),'=',$current_year )
-                ->where('chambres.id','=', $idchambre)
-                ->groupBy(DB::raw('month(streams.created_at)'))
-                ->get();
-
-
-            return response()->json($statistiques,201);
-
-        }
+          return response()->json(
+            [
+              'success' => true,
+              'message' => 'Ajouté avec succes'
+            ]
+          );
 
     }
 
+    ////////////////// Capacite //////////////////////////////////:
     public function getCapacite($id)
     {
         $chambres = DB::table('chambres')
             ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
-            ->select( 'chambres.numero','chambres.capacite',DB::raw('100*sum(lots.capacite)/chambres.capacite as taux'), DB::raw('sum(lots.capacite) as capcite_reel'))
+            ->select( 'chambres.numero','chambres.capacite',
+            DB::raw('ROUND(IFNULL(100*sum(lots.Quantite)/chambres.capacite,0),2) as taux'),
+            DB::raw('IFNULL(sum(lots.Quantite),0) as capcite_reel'))
             ->where('chambres.id','=' ,$id)
-            ->get();
+            ->first();
 
         return response()->json($chambres,201);
     }
+    public function getCapaciteAll()
+    {
+        $chambres = DB::table('chambres')
+        ->leftJoin('lots', 'lots.chambre_id', '=', 'chambres.id')
+        ->select( 'chambres.id','chambres.numero','chambres.capacite',
+        
+        DB::raw('ROUND(IFNULL(100*sum(lots.Quantite)/chambres.capacite,0),2) as taux'),
+         DB::raw('ROUND(IFNULL(sum(lots.Quantite),0),2) as capcite_reel'))
+        ->groupBy('chambres.id')
+        ->get();
+
+        return response()->json($chambres,201);
+    }
+
+    /////////////////////////////////// Temp & hum ///////////////////////////////////
 
     public function getTempHum($id,$interval)
     {
@@ -229,10 +218,13 @@ class chambreController extends Controller
             ->join('streams', 'streams.carte_code', '=', 'cartes.code')
             ->select( 'temperature', 'humedite','streams.created_at')
             ->where('streams.created_at','>=' ,$newTime)
+            ->where('chambres.id','=',$id)
             ->orderByDesc('streams.created_at')
             ->get();
         return response()->json($chambres,201);
     }
+
+    /////////////////////////////////// Lots ///////////////////////////////////
     public function getLots($id)
     {
         $chambres = DB::table('chambres')
@@ -246,7 +238,133 @@ class chambreController extends Controller
     }
 
     // ajouter un lot à chambre
-    public function addLots(){
+    public function addLots(Request $request){
+        $data = $request->validate([
+            'numero'     => ['required', 'string'],
+            'quatite'    => 'required',
+            'libelle' => ['required', 'string'],
+            'chambre_id' => 'required',
+            'variete_id' => 'required'
+        ]);
+        $image = $request->file('image');
 
+        if(!is_null($image)){
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            Image::make($image)->resize(300, 300)->save(storage_path('/uploads/' . $filename));
+            $data['image'] = $filename;
+        }
+
+        $data['date-entree']=Carbon::now();
+        $lot = Lot::create($data);
+        return response()->json($lot, 201);
     }
+    /////////////////////////// Alerts /////////////////////////////////////
+    public function getAlerts($id,$interval){
+        $newTime = Carbon::now()->subMinutes($interval);
+        $chambres = DB::table('chambres')
+            ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+            ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+            ->join('alerts', 'streams.carte_code', '=', 'alerts.carte')
+            ->where('alerts.created_at','>=' ,$newTime)
+            ->when($id!=0, function ($query) use ($id) {
+                return $query->where('chambres.id','=',$id);
+            })
+            ->select('chambres.id as chambre','type','message','alerts.created_at as date')
+            ->orderByDesc('alerts.created_at')
+            ->distinct()->get();
+        return response()->json($chambres,201);        
+    }
+
+    ////////////////////////// Temp Hum //////////////////////////
+    public function getSate($id,$typestat)
+    {  
+        $TypeStat=$typestat;
+        $now = Carbon::now();
+        if ($TypeStat==0){  // 0 statistiques du jour
+        }
+        elseif  ($TypeStat==1) // Statistique de la semaine en cours
+        {
+            DB::statement("SET lc_time_names = 'fr_FR'");
+            $weekStartDate = $now->startOfWeek()->format('Y-m-d H:i');
+            $weekEndDate = $now->endOfWeek()->format('Y-m-d H:i');
+            $statistiques = DB::table('chambres')
+                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+                ->select(
+                        DB::raw('dayname(streams.created_at) as created_at'), 
+                        'chambres.id',
+                        DB::raw('max(streams.temperature) as max_temp'), 
+                        DB::raw('min(streams.temperature) as min_temp'),
+                        DB::raw('max(streams.humedite) as max_hum'), 
+                        DB::raw('min(streams.humedite) as min_hum')
+                        )
+                ->whereBetween('streams.created_at', [$weekStartDate, $weekEndDate])
+                ->where('Chambres.id','=',$id)
+                ->groupBy(DB::raw('day(streams.created_at)'))
+                ->get();
+            return response()->json($statistiques,201);
+        }
+        elseif  ($TypeStat==2) // Statistique du mois en  par jour
+        {
+            DB::statement("SET lc_time_names = 'fr_FR'");
+            $current_month = Carbon::now()->month;
+            $statistiques = DB::table('Chambres')
+                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+                ->select(
+                    DB::raw('DAYOFMONTH(streams.created_at) as created_at'), 
+                    'chambres.id',
+                    DB::raw('max(streams.temperature) as max_temp'), 
+                    DB::raw('min(streams.temperature) as min_temp'),
+                    DB::raw('max(streams.humedite) as max_hum'), 
+                    DB::raw('min(streams.humedite) as min_hum'),
+                    
+                )
+                ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
+                //->where('Chambres.id','=',$id)
+                ->groupBy(DB::raw('day(streams.created_at)'))
+                ->get();
+                return response()->json($statistiques,201);
+        }
+        elseif  ($TypeStat==4) // Statistique du mois en cours par semaine
+        {
+            $current_month = Carbon::now()->month;
+            $statistiques = DB::table('Chambres')
+                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+                ->select(DB::raw('week(streams.created_at,1) as created_at'), 'chambres.id',
+                DB::raw('max(streams.temperature) as max_temp'), 
+                DB::raw('min(streams.temperature) as min_temp'),
+                DB::raw('max(streams.humedite) as max_hum'), 
+                DB::raw('min(streams.humedite) as min_hum')
+                )
+                ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
+                //->where('Chambres.id','=',$id)
+                ->groupBy(DB::raw('week(streams.created_at,1)'))
+                ->get();
+                return response()->json($statistiques,201);
+        }
+        elseif  ($TypeStat==3) // Statistique de l'annee en cours
+        {
+            DB::statement("SET lc_time_names = 'fr_FR'");
+            $current_year = Carbon::now()->year;
+            $statistiques = DB::table('Chambres')
+                ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
+                ->join('streams', 'streams.carte_code', '=', 'cartes.code')
+                ->select(DB::raw('MONTHNAME(streams.created_at) as created_at'), 
+                'chambres.id',
+                DB::raw('max(streams.temperature) as max_temp'), 
+                DB::raw('min(streams.temperature) as min_temp'),
+                DB::raw('max(streams.humedite) as max_hum'), 
+                DB::raw('min(streams.humedite) as min_hum')
+                )
+                ->where(DB::raw('year(streams.created_at)'),'=',$current_year )
+                // ->where('Chambres.id','=',$id)
+                ->groupBy(DB::raw('month(streams.created_at)'))
+                ->get();
+            return response()->json($statistiques,201);
+
+        }
+ 
+     }
 }

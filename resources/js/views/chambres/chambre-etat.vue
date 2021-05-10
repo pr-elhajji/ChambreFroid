@@ -37,14 +37,14 @@ export default {
     <div class="card-footer text-center">
         <div class="row">
             <div class="col-4 b-r-default">
-                <h5>
-                    <span class="text-muted m-b-0">Temp: {{ this.chambreData.temperature }} °C</span>
-                </h5>
+                <h6>
+                    <span class="text-muted m-b-0">Temp:<br/> {{ this.chambreData.temperature }} °C</span>
+                </h6>
             </div>
             <div class="col-4 b-r-default">
-                <h5>
-                    <span class="text-muted m-b-0">Hum: {{ this.chambreData.humedite }}%</span>
-                </h5>
+                <h6>
+                    <span class="text-muted m-b-0">Hum:<br/> {{ this.chambreData.humedite }}%</span>
+                </h6>
             </div>
             <div class="col-4 b-r-default">
                 <div v-if="this.chambreData.etat_evaporateur ===1" class="flex-fill">

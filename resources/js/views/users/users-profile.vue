@@ -61,7 +61,7 @@ export default {
               <div class="col-sm-4">
                 <div class="avatar-md profile-user-wid mb-4">
                   <img
-                    src="/images/users/mustaphaziani.jpg"
+                    src="/images/users/avatar-1.png"
                     alt
                     class="img-thumbnail rounded-circle"
                   />
@@ -75,20 +75,20 @@ export default {
                         <tbody>
                         <tr>
                             <th scope="row">Nom :</th>
-                            <td>Eziani<!--{{ user.name }}--></td>
+                            <td>Admin<!--{{ user.name }}--></td>
                         </tr>
 
                         <tr>
                             <th scope="row">Prénom :</th>
-                            <td>Mustapha<!--{{ user.firstname }}--></td>
+                            <td>Admin<!--{{ user.firstname }}--></td>
                         </tr>
                         <tr>
                             <th scope="row">Téléphone :</th>
-                            <td>+212 661-996049<!--{{ user.phone}}--></td>
+                            <td>+212 661-000009<!--{{ user.phone}}--></td>
                         </tr>
                         <tr>
                             <th scope="row">E-mail :</th>
-                            <td>mustapha.ezziani@ipaper.com <!--{{ user.email }}--></td>
+                            <td>admin@admin.com <!--{{ user.email }}--></td>
                         </tr>
 
                         </tbody>

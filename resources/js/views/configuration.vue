@@ -29,7 +29,7 @@ export default {
     <PageHeader :title="title" :items="items" />
     <div class="row">        
             <div class="col-md-4">
-                <a href="/chambres/list">
+                <a href="#">
                     <b-card bg-variant="primary" class="text-white-50">
                         <h5 class="mt-0 mb-4 text-white">
                             <i class="mdi mdi-bullseye-arrow me-3"></i> Chambres
@@ -39,7 +39,7 @@ export default {
             </div>
 
         <div class="col-md-4">
-            <a href="/varietes/list">
+            <a href="#">
                 <b-card bg-variant="success" class="text-white-50">
                     <h5 class="mt-0 mb-4 text-white">
                         <i class="mdi mdi-check-all me-3"></i> Variétes

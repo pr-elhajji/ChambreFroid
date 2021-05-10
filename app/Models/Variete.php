@@ -38,4 +38,5 @@ class Variete extends Model
     protected $casts = [
 
     ];
+
 }

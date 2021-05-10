@@ -1,8 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request\validate;
+
+
+use App\Models\Lot;
+
+
 
 class LotController extends Controller
 {
@@ -34,7 +41,38 @@ class LotController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'numero' => 'required|string|unique:App\Models\Lot',
+            'variete_id' => 'required',
+            'quantite'=>'required',
+            'chambre_id' => 'required',
+            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+    
+        ]);
+       
+        $imageName='';
+
+        if (!is_null($request->image)){
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/lots'), $imageName);
+        }
+       
+        Lot::updateOrCreate(
+            [
+              'id' => $request->id
+            ],
+            [
+              'numero' => $request->numero,
+              'capacite' => $request->capacite,
+              'image'=> $imageName,
+              'quantite'=>$request->quantite,
+              'variete_id'=>$request->variete_id,
+              'chambre_id'=>$request->chambre_id
+
+            ]
+          );
+          return response()->json('Ajouté avec succes',201);
+        
     }
 
     /**
@@ -45,7 +83,9 @@ class LotController extends Controller
      */
     public function show($id)
     {
-        //
+        $lot = Lot::find($id);
+        return response()->json($lot,201);
+
     }
 
     /**
@@ -68,7 +108,40 @@ class LotController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $lot = Lot::find($id);
+
+        $this->validate($request, [
+            'numero' => 'required|string|unique:App\Models\Lot',
+            'variete_id' => 'required',
+            'quantite'=>'required',
+            'chambre_id' => 'required',
+            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+    
+        ]);
+       
+        $imageName='';
+
+        if (!is_null($request->image)){
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/lots'), $imageName);
+        }
+       
+        Lot::updateOrCreate(
+            [
+              'id' => $id
+            ],
+            [
+              'numero' => $request->numero,
+              'capacite' => $request->capacite,
+              'image'=> $imageName,
+              'quantite'=>$request->quantite,
+              'variete_id'=>$request->variete_id,
+              'chambre_id'=>$request->chambre_id
+
+            ]
+          );
+          return response()->json('Modifier avec succes',201);
+        
     }
 
     /**
@@ -79,6 +152,16 @@ class LotController extends Controller
      */
     public function destroy($id)
     {
-        //
+        
+        $lot = Lot::find($id);
+        $image=$lot->image;
+        if(!is_null($image))
+            unlink("images/lots/".$image);
+        $lot->delete();
+        // TODO supprimer l'image dans le dossier       
+
+        return response()->json([
+            'message' => 'Supprimées avec succès!'
+        ]);
     }
 }

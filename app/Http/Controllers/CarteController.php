@@ -73,7 +73,7 @@ class CarteController extends Controller
             ->get();
 
         if ($result->isEmpty()){
-            return response()->json("erreur de carte", 401);
+            return response()->json("Vérifier le code de la carte", 401);
         }
 
         $password=Crypt::decrypt($result[0]->password);
@@ -178,7 +178,7 @@ class CarteController extends Controller
 
     public function getData($data)
     {
-        $data = preg_replace("/,/", "\",\"", $data);
+        $data = preg_replace("/&/", "\",\"", $data);
         $data = preg_replace("/:/", "\":\"", $data);
         $data="{\"".$data."\"}";
         $object = json_decode($data,false);

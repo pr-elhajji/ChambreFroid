@@ -17,11 +17,18 @@ import * as VueGoogleMaps from "vue2-google-maps";
 import VueSweetalert2 from "vue-sweetalert2";
 import i18n from "./i18n";
 
+//my import
+import VueExcelXlsx from "vue-excel-xlsx";
+
 Vue.prototype.$isDev = process.env.MIX_APP_ENV !== "production";
 Vue.config.devtools = Vue.prototype.$isDev;
 Vue.config.debug = Vue.prototype.$isDev;
 Vue.config.silent = !Vue.prototype.$isDev;
 import tinymce from "vue-tinymce-editor";
+
+//my tools
+Vue.use(VueExcelXlsx);
+//fin my tools
 
 Vue.use(BootstrapVue);
 Vue.use(vClickOutside);

@@ -16,6 +16,11 @@ Vue.component("dashboard", require("./dashboard/dashboard-simple").default);
 // Chambre
 Vue.component("chambres", require("./chambres/chambres-grid").default);
 Vue.component("chambre-details", require("./chambres/chambre-details").default);
+Vue.component("chambres-list", require("./chambres/chambres-list").default);
+
+//varietes
+
+Vue.component("varietes-list", require("./varietes/varietes-list").default);
 
 //Users
 Vue.component( "users-profile",require("./users/users-profile").default);
@@ -25,5 +30,11 @@ Vue.component("register", require("./account/register").default);
 Vue.component("forgot-password", require("./account/forgot-password").default);
 
 Vue.component("reset-password", require("./account/reset-password").default);
+
+//Configuration
+Vue.component("configuration", require("./configuration").default);
+
+//report
+Vue.component("report", require("./reports/report").default);
 
 
