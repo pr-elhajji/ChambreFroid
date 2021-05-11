@@ -114,17 +114,21 @@ class LotController extends Controller
      */
     public function updateLot(Request $request, $id)
     {
-        $lot = Lot::findOrFail($id);
+
         //$lotData = array_filter($request->all());
         $this->validate($request, [
             'numero'     => 'required',
             'variete_id' => 'required',
             'quantite'   =>'required',
-            'chambre_id' => 'required',    
+            'chambre_id' => 'required'    
         ]); 
+
+        $lot = Lot::findOrFail($id);
         $imageName=$lot->image;
+
         if (!is_null($request->image)){
-            unlink("images/lots/".$$lot->image);
+            if ($imageName) 
+                unlink("images/ lots/".$imageName);
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images/lots'), $imageName);
         } 
