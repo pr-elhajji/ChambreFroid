@@ -31,7 +31,7 @@ export default {
                 quantite:0,
                 chambre_id:this.id,
             },
-            updated_lot:0,
+            updated_lot:'',
         }
     },
     mounted() {
@@ -70,19 +70,21 @@ export default {
 
             axios.post("/api/lots/", formData, {
                 headers: {
-                    "Content-Type": "multipart/for-data",
+                    "Content-Type": "multipart/form-data",
                 },
             }).then((response) => {
                     this.msgAlert = response.data;
                     this.showModal= false,
                     this.submitted = true;
+                    this.getData();
+
             }).catch((err) => {
                 this.errorAlert=true;
                 this.msgAlert="La référence doit être unique | images accetpées:jpeg,png,jpg,gif,svg";
                 this.submitted = false;
             });
-            this.getData();
         },
+    
         modifier(){
             this.errors = null
             let formData = new FormData();
@@ -91,23 +93,25 @@ export default {
                formData.append("image", this.formData.image, this.formData.image.name);
             _.each(this.formData, (value, key) => {
                 formData.append(key, value);
-            });               
-
-            axios.update("/api/lots/"+updated_lot, formData, {
+            });
+            axios.post("/api/lots/updatelots/"+this.updated_lot, formData,
+            {
                 headers: {
-                    "Content-Type": "multipart/for-data",
+                    'Content-Type': 'multipart/form-data'
                 },
-            }).then((response) => {
-                    this.msgAlert = response.data;
-                    console.log( response.data);
-                    this.showModal= false,
-                    this.submitted = true;
+            }
+            
+            ).then((response) => {
+                console.log(response.data);
+                //this.msgAlert = response.data;
+                this.showModal = false;
+                this.submitted = true;
+                this.getData(); 
             }).catch((err) => {
                 this.errorAlert=true;
                 this.msgAlert="La référence doit être unique | images accetpées:jpeg,png,jpg,gif,svg";
                 this.submitted = false;
             });
-            this.getData();    
         },
         supprimer(id){
            
@@ -135,11 +139,11 @@ export default {
         },
         editModal(lot){
                 this.editmode = true;
-                this.showModal = true
+                this.showModal = true;
                 this.updated_lot=lot.id;
                 this.formData.numero=lot.numero;
                 this.formData.variete_id=lot.variete_id;
-                this.formData.quantite=lot.capacite;               
+                this.formData.quantite=lot.quantite;               
                // $('#addNew').modal('show');                
         },
         newModal(id){
@@ -195,7 +199,7 @@ export default {
                                     <a href="#" class="text-dark">{{ele.libelle}}</a>
                                 </h5>
                             </td>
-                            <td> <p class="text-muted mb-0">{{ele.capacite}}</p></td>
+                            <td> <p class="text-muted mb-0">{{ele.quantite}}</p></td>
                             <td>
                                 <a  @click="editModal(ele)" v-b-tooltip.hover title="Modifier">
                                     <i class="bx bx-edit"></i>
@@ -279,67 +283,6 @@ export default {
         </div>
 
         </b-form>
-
-<!--
-    <form @submit.prevent="editmode ? modifier() : ajouter()">
-        <div class="row">
-            <div class="col-6">
-                <div class="mb-3">
-                    <b-alert :show="errorAlert" id="my-alert" variant="warning" dismissible>{{msgAlert}}</b-alert>
-                    <label for="name">Référence:</label>
-                    <input id="serie" name="serie"  type="text"  class="form-control"
-                        placeholder=""
-                        v-model="formData.numero"
-                        required
-                        />
-                </div>
-                <div class="mb-3">
-                    <label class="col-md-2 col-form-label">Variété</label>
-                    <a v-b-tooltip.hover title="Ajouer une variété">
-                        <i class="mdi mdi-database-plus"></i>
-                    </a>
-                    <div class="col-md-10">
-                      <select class="form-control"  v-model="formData.variete" required>
-                        <option v-for="item in varietes" :key="item.id">{{item.libelle}}</option>
-                      </select>
-
-                    </div>
-                  </div>
-                    <div class="mb-3">
-                    <label for="name">Quantité:</label>
-                    <input id="model"   type="text" class="form-control"
-                            v-model="formData.quantite"
-                            required
-                            />
-                </div>
-
-            </div>
-
-            <div class="col-6">
-                <div class="mb-3">
-                    <label for="image">Image</label>
-                            <vue-dropzone id="dropzone" 
-                                    ref="file" name="image" 
-                                    :use-custom-slot="true" 
-                                    :options="dropzoneOptions" 
-                                    @vdropzone-file-added="fileAdded">
-                        <div class="dropzone-custom-content">
-                            <div class="mb-1">
-                                <i class="display-4 text-muted bx bxs-cloud-upload"></i>
-                            </div>
-                            <h4>Déposez l'image ici ou cliquez pour importer.</h4>
-                        </div>
-                    </vue-dropzone>
-
-                </div>
-            </div>
-            <div class="text-end mt-3">
-                <b-button variant="light"  @click="$bvModal.hide('my-modal')">Fermer</b-button>
-                <b-button type="submit" variant="success" class="ms-1">Envoyer</b-button>
-            </div>
-        </div>
-    </form>
-    -->
 </b-modal>
 
 </div>

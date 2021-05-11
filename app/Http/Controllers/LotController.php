@@ -108,27 +108,29 @@ class LotController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $lot = Lot::find($id);
-
+    }
+    /**
+     * update lot using post
+     */
+    public function updateLot(Request $request, $id)
+    {
+        $lot = Lot::findOrFail($id);
+        //$lotData = array_filter($request->all());
         $this->validate($request, [
-            'numero' => 'required|string|unique:App\Models\Lot',
+            'numero'     => 'required',
             'variete_id' => 'required',
-            'quantite'=>'required',
-            'chambre_id' => 'required',
-            'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-    
-        ]);
-       
-        $imageName='';
-
+            'quantite'   =>'required',
+            'chambre_id' => 'required',    
+        ]); 
+        $imageName=$lot->image;
         if (!is_null($request->image)){
+            unlink("images/lots/".$$lot->image);
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images/lots'), $imageName);
-        }
-       
+        } 
         Lot::updateOrCreate(
             [
-              'id' => $id
+              'id' => $request->id
             ],
             [
               'numero' => $request->numero,
@@ -137,11 +139,9 @@ class LotController extends Controller
               'quantite'=>$request->quantite,
               'variete_id'=>$request->variete_id,
               'chambre_id'=>$request->chambre_id
-
             ]
-          );
-          return response()->json('Modifier avec succes',201);
-        
+          );  
+        return response()->json('Modifié avec succes',201);
     }
 
     /**

@@ -32,6 +32,8 @@ Route::get('/machines/temphumstat/{id}/{typestat}', ['uses'=> 'chambreController
 
 //lots
 Route::resource('lots', LotController::class);
+Route::post('/lots/updatelots/{id}',['uses'=>'LotController@updateLot']); //add lot
+
 
 //Varietes
 Route::resource('varietes', VarieteController::class);
