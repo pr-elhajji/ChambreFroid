@@ -116,12 +116,12 @@ export default {
     onReset(event) {
         event.preventDefault()
         // Reset our form values
-        this.formData.dateDebut = Date.now();
-        this.formData.dateFin = Date.now();
+        this.formData.dateDebut = "";
+        this.formData.dateFin = "";
         //this.formData.typeClient = 'Tous';
         // Trick to reset/clear native browser form validation state
         this.show = true
-       this.tableData=null
+       this.tableData=[]
       },
       exportExcel() {
                 let createXLSLFormatObj = [];

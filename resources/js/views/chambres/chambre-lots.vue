@@ -6,7 +6,7 @@ import vue2Dropzone from "vue2-dropzone";
 
 
 export default {
-    components: {vueDropzone: vue2Dropzone},
+    
     props: {
         id: {
             type: String,
@@ -44,6 +44,7 @@ export default {
         },
         getData : function() {
             let url='/api/chambres/lots/' + this.id;
+            console.log(url);
             axios.get(url)//lots dans une chambre
                 .then(response => {
                     this.records = response.data;
@@ -62,8 +63,8 @@ export default {
             this.errors = null
             let formData = new FormData();
             formData.append("chambre_id", this.id);
-            if(this.formData.image)
-               formData.append("image", this.formData.image, this.formData.image.name);
+            if(this.image)
+                formData.append("image", this.image, this.imageName);
             _.each(this.formData, (value, key) => {
                 formData.append(key, value);
             });               
@@ -73,14 +74,13 @@ export default {
                     "Content-Type": "multipart/form-data",
                 },
             }).then((response) => {
-                    this.msgAlert = response.data;
                     this.showModal= false,
                     this.submitted = true;
                     this.getData();
 
-            }).catch((err) => {
-                this.errorAlert=true;
-                this.msgAlert="La référence doit être unique | images accetpées:jpeg,png,jpg,gif,svg";
+            }).catch((error) => {
+                this.errorAlert=true;                
+                this.msgAlert="Erreur "+ error.response.status+ " : "+ "Vérifiez les données saisies";
                 this.submitted = false;
             });
         },
@@ -89,8 +89,8 @@ export default {
             this.errors = null
             let formData = new FormData();
             formData.append("chambre_id", this.id);
-            if(this.formData.image)
-               formData.append("image", this.formData.image, this.formData.image.name);
+            if(this.image)
+               formData.append("image", this.image, this.image.name);
             _.each(this.formData, (value, key) => {
                 formData.append(key, value);
             });
@@ -100,7 +100,6 @@ export default {
                     'Content-Type': 'multipart/form-data'
                 },
             }
-            
             ).then((response) => {
                 console.log(response.data);
                 //this.msgAlert = response.data;
@@ -138,6 +137,7 @@ export default {
             });
         },
         editModal(lot){
+            this.errorAlert=false;
                 this.editmode = true;
                 this.showModal = true;
                 this.updated_lot=lot.id;
@@ -147,6 +147,7 @@ export default {
                // $('#addNew').modal('show');                
         },
         newModal(id){
+            this.errorAlert=false;
             this.editmode = false;
             this.showModal = true;
             this.chambre_id=id;
@@ -191,7 +192,7 @@ export default {
                             <td> {{ele.numero}} </td>
                             <td>
                                 <div v-if="ele.image">
-                                    <img class="rounded-circle avatar-xs" :src="`/images/lots/${ele.image}`" alt />
+                                    <img class="rounded-circle avatar-xs" :src="`/images/uploads/lots/${ele.image}`" alt />
                                 </div>
                             </td>
                             <td>
@@ -219,6 +220,8 @@ export default {
 
      <b-modal id="my-modal" size="lg" :title="formTitle()" v-model="showModal" hide-footer>
         <b-form @submit.prevent="editmode ? modifier() : ajouter()">
+        <b-alert :show="errorAlert" variant="warning" dismissible>{{msgAlert}}</b-alert>
+
         <div class="row">
             <div class="col-16">
                 <div class="mb-3">
@@ -239,16 +242,16 @@ export default {
                 </div>
                 <div class="mb-3">
                     <b-form-file
-                        v-model="formData.image"
-                        :state="Boolean(formData.image)"
-                        placeholder="choisir une photo du lot"
+                        v-model="image"
+                        :state="Boolean(image)"
+                        placeholder=""
                         drop-placeholder="Glisser l'image içi..."
                     >
                     </b-form-file>
                 </div>
                 <div class="mb-3">
                     <label class="col-md-2 col-form-label">Variété</label>
-                    <a v-b-tooltip.hover title="Ajouer une variété">
+                    <a href="/varietes/list" v-b-tooltip.hover title="Ajouer une variété">
                         <i class="mdi mdi-database-plus"></i>
                     </a>
                     <div class="col-md-4">

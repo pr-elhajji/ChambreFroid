@@ -3,13 +3,12 @@ import axios from "axios";
 import Layout from "../../layouts/main";
 import PageHeader from "../../components/page-header";
 
-import vue2Dropzone from "vue2-dropzone";
 import { required } from "vuelidate/lib/validators";
 import _ from "lodash";
 import Swal from "sweetalert2";
 export default {
    components: {
-        Layout, PageHeader, vueDropzone: vue2Dropzone },
+        Layout, PageHeader},
     data() {
         return {
             records:null,
@@ -24,28 +23,21 @@ export default {
                 },
             ],
             formData: {
-                id:'',
                 numero: "",
                 capacite: "",
                 image:""
             },
-
-            avatar: null,
-            avatarName: null,
+            image: null,
+            imageName: null,
             chambre: null,
-
-            editedIndex:-1,
+            //b-modal
             showModal: false,
             submitted: false,
             msgAlert:'',
             errorAlert:false,
-            editmode:true,
+            editmode:false,
             errors: null,
-
-            dropzoneOptions: {
-                url:'https://httpbin.org/post',
-                thumbnailHeight: 100,
-            },
+            updated_chambre:'',
         };
     },
     validations: {
@@ -66,13 +58,13 @@ export default {
                 }).catch(error => console.log(error));
         },
         formTitle () {
-            return this.editedIndex === -1 ? 'Ajouter' : 'Modifier'
+            return this.editmode? 'Modifier':'Ajouter'
         },
         fileAdded(file) {
-            this.avatar = file;
-            this.avatarName = file.name;
+            this.image = file;
+            this.imageName = file.name;
         },
-        create(){
+        ajouter(){
             // stop here if form is invalid
             this.$v.$touch();
             if (this.$v.$invalid) {
@@ -81,8 +73,8 @@ export default {
             else {
                 this.errors = null
                 let formData = new FormData();
-                if(this.avatar)
-                    formData.append("image", this.avatar, this.avatarName);
+                if(this.image)
+                    formData.append("image", this.image, this.imageName);
                 _.each(this.formData, (value, key) => {
                     formData.append(key, value);
                 });
@@ -92,28 +84,17 @@ export default {
                     },
                 })
                 .then((response) => {
-                    this.chambre = response.data;
+                    this.msgAlert = response.data;
                     this.showModal= false,
                     this.submitted = true;
-
+                    this.getData();
                 })
                 .catch((err) => {
                     this.errorAlert=true;
                     this.msgAlert="La référence doit être unique | images accetpées:jpeg,png,jpg,gif,svg";
-
-                    if (err.response.status === 422) {
-                        this.errors = [];
-                        _.each(err.response.data.errors, (error) => {
-                            _.each(error, (e) => {
-                                this.errors.push(e);
-                            });
-                        });
-                    }
-
+                    this.submitted = false;
 
                 });
-            this.submitted = false;
-
             }
 
         },
@@ -129,9 +110,9 @@ export default {
             }).then(result => {
                 if (result.value) {
                     //TODO methode de supprission
-                    console.log(id);
                     axios.delete('/api/chambres/'+id)// axios.get('api/regionbyrendement')
                     .then(response => {
+                        this.msgAlert = response.data;
                         const index = this.records.findIndex(ele => ele.id === id) // find the post index
                         if (~index) // if the element exists in array
                         this.records.splice(index, 1) //delete the element
@@ -142,7 +123,7 @@ export default {
                 }
             });
             },
-        update(){
+        modifier(){
             // stop here if form is invalid
             this.$v.$touch();
             if (this.$v.$invalid) {
@@ -151,38 +132,49 @@ export default {
             else {
                 this.errors = null
                 let formData = new FormData();
-                if(this.avatar)
-                    formData.append("image", this.avatar, this.avatarName);
+                if(this.image)
+                    formData.append("image", this.image, this.imageName);
                 _.each(this.formData, (value, key) => {
                     formData.append(key, value);
                 });
-                axios.put("/api/chambres/"+this.formData.id, formData, {
+                axios.post("/api/chambres/updatechambres/"+this.updated_chambre, formData, {
                     headers: {
                         "Content-Type": "multipart/for-data",
                     },
                 }).then((response) => {
-                        alert(response.data);
-                        this.showModal= false,
-                            this.submitted = true;
+                    this.showModal = false;
+                    this.submitted = true;
+                    this.getData(); 
+                    //this.msgAlert = response.data;                        
 
                     }).catch((err) => {
                         this.errorAlert=true;
                         this.msgAlert="La référence doit être unique | images accetpées:jpeg,png,jpg,gif,svg";
+                        this.submitted = false;
                     });
-                this.submitted = false;
 
             }
 
         },
-        editer(chambre){
+        editModal(chambre){
             this.editmode = true;
-            this.editedIndex=-1,
-            this.showModal = true
-            this.formData.id=chambre.id;
+            this.showModal = true;
+            this.submitted=false;
+            this.updated_chambre=chambre.id;
             this.formData.numero=chambre.numero;
             this.formData.capacite=chambre.capacite;
-            this.formData.image=chambre.image;
+            this.imagename=chambre.image;
             // $('#addNew').modal('show');
+        },
+        newModal(){
+            this.editmode = false;
+            this.showModal = true;
+            this.submitted=false;
+            //$('#my-modal').modal('show');
+            this.formData.numero='';
+            this.formData.numero='';
+            this.formData.capacite='';
+            this.imagename='';
         },
     },
 
@@ -200,7 +192,7 @@ export default {
 
                          <div class="d-flex align-items-start">
                             <h4 class="card-title mb-4">Liste des chambres froides</h4>
-                            <b-button class="btn btn-success ms-auto" @click="editedIndex=-1, showModal = true">
+                            <b-button class="btn btn-success ms-auto" @click="newModal()">
                                  Ajouter une chambre froide
                             </b-button>
                         </div>
@@ -209,7 +201,7 @@ export default {
                             <thead class="table-light">
                             <tr>
                                 <th>Chambre</th>
-                                <th>Numéro</th>
+                                <th>Référence</th>
                                 <th>Capacité max</th>
                                 <th colspan="2">Action</th>
                             </tr>
@@ -218,7 +210,7 @@ export default {
                             <tr v-for="ele in records" :key="ele.id">
                                 <td>
                                     <img
-                                        :src="'/images/chambres/' + ele.image"
+                                        :src="'/images/uploads/chambres/' + ele.image"
                                         :alt="ele.numero"
                                         :title="ele.numero"
                                         class="avatar-md"
@@ -234,12 +226,13 @@ export default {
                                 </td>
                                 <td>{{ele.capacite}}</td>
                                 <td>
+                                    <a href="#" @click.prevent="editModal(ele)" class="action-icon text-danger">
+                                        <i class="mdi mdi-circle-edit-outline font-size-18"></i>
+                                    </a>
                                     <a href="#" @click="supprimer(ele.id)" class="action-icon text-danger">
                                         <i class="mdi mdi-trash-can font-size-18"></i>
                                     </a>
-                                    <a href="#" @click.prevent="editer(ele)" class="action-icon text-danger">
-                                        <i class="mdi mdi-circle-edit-outline font-size-18"></i>
-                                    </a>
+                                    
                                 </td>
                             </tr>
 
@@ -264,8 +257,7 @@ export default {
 
         <!-- Model -->
         <b-modal id="my-modal" size="lg" :title="formTitle()" v-model="showModal" hide-footer>
-
-            <form @submit.prevent="editmode ? update() : create()">
+            <form @submit.prevent="editmode ? modifier() : ajouter()">
                 <div class="row">
                     <div class="col-12">
                         <div class="mb-3">
@@ -303,7 +295,7 @@ export default {
                     <b-form-file
                         v-model="image"
                         :state="Boolean(image)"
-                        placeholder=" photo du lot..."
+                        placeholder=" photo de la chambre..."
                         drop-placeholder="Glisser l'image içi..."
                     >
                     </b-form-file>

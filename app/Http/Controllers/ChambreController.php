@@ -77,42 +77,7 @@ class chambreController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $rules = [
-                'numero' => 'string|unique:App\Models\Chambre',
-                'capacite' => 'numeric',
-                'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-        ];
-        $messages = [
-            "numero.unique" => "La référence doit être unique",
-                "capacite.numeric" => "valuer numérique!",
-                "image.mimes" => "images accetpées:jpeg,png,jpg,gif,svg"
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-        if ($validator->fails()) {
-            return response($validator->errors(), 400);
-        }
-        $imageName='';
-        if (!is_null($request->image)){
-            $imageName = time() . '.' . $request->image->extension();
-            //TODO supprimer le fichier puis ajouter le nouveau
-            $request->image->move(public_path('images/chambres'), $imageName);
-        }
-        $chambre = Chambre::find($id);
-        if (!is_null($request->numero))
-                $chambre->numero=$request->numero ;
-        if (!is_null($request->capacite))
-            $chambre->capacite=$request->capacite;
-
-        $chambre->image= $imageName;
-        $chambre->save();
-        return response()->json(
-           [
-              'success' => true,
-              'message' => 'modifiée avec succes'
-           ]
-        );
+        
     }
 
     /**
@@ -124,10 +89,49 @@ class chambreController extends Controller
     public function destroy($id)
     {
         $chambre = Chambre::find($id);
+        $image=$chambre->image;
+        if(!is_null($image))
+            unlink("images/uploads/chambres/".$image);
         $chambre->delete();
         return response()->json([
         'message' => 'Supprimées avec succès!'
         ]);
+    }
+  /**
+     * update lot using post
+     */
+    public function updateChambre(Request $request, $id)
+    {
+
+        $this->validate($request, [
+            'numero'     => 'required',
+            'capacite' => 'required', 
+        ]); 
+
+        $chambre = Chambre::findOrFail($id);
+
+        $imageName=$chambre->image;        
+
+        if (!is_null($request->image)){
+            if ($imageName)
+            {
+                unlink("images/uploads/chambres/".$imageName);
+
+            } 
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/uploads/chambres'), $imageName);
+        } 
+        Chambre::updateOrCreate(
+            [
+              'id' => $request->id
+            ],
+            [
+              'numero' => $request->numero,
+              'capacite' => $request->capacite,
+              'image'=> $imageName
+            ]
+          );  
+        return response()->json('Modifiée avec succes',201);
     }
 
     /**
@@ -159,7 +163,7 @@ class chambreController extends Controller
         $imageName='';
         if (!is_null($request->image)){
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/chambres'), $imageName);
+            $request->image->move(public_path('images/uploads/chambres'), $imageName);
         }
         Chambre::updateOrCreate(
             [
@@ -172,12 +176,7 @@ class chambreController extends Controller
             ]
           );
 
-          return response()->json(
-            [
-              'success' => true,
-              'message' => 'Ajouté avec succes'
-            ]
-          );
+          return response()->json('Ajoutée avec succes',201);
 
     }
 
@@ -231,7 +230,7 @@ class chambreController extends Controller
             ->join('lots', 'lots.chambre_id', '=', 'chambres.id')
             ->join('varietes', 'lots.variete_id', '=', 'varietes.id')
             ->select( 'chambres.id', 'lots.*','varietes.libelle')
-            ->where('chambres.id','=' ,'1')
+            ->where('chambres.id','=' ,$id)
             ->get();
 
         return response()->json($chambres,201);
@@ -299,7 +298,7 @@ class chambreController extends Controller
                         DB::raw('min(streams.humedite) as min_hum')
                         )
                 ->whereBetween('streams.created_at', [$weekStartDate, $weekEndDate])
-                ->where('Chambres.id','=',$id)
+                ->where('chambres.id','=',$id)
                 ->groupBy(DB::raw('day(streams.created_at)'))
                 ->get();
             return response()->json($statistiques,201);
@@ -308,7 +307,7 @@ class chambreController extends Controller
         {
             DB::statement("SET lc_time_names = 'fr_FR'");
             $current_month = Carbon::now()->month;
-            $statistiques = DB::table('Chambres')
+            $statistiques = DB::table('chambres')
                 ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
                 ->join('streams', 'streams.carte_code', '=', 'cartes.code')
                 ->select(
@@ -321,7 +320,7 @@ class chambreController extends Controller
                     
                 )
                 ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
-                //->where('Chambres.id','=',$id)
+                //->where('chambres.id','=',$id)
                 ->groupBy(DB::raw('day(streams.created_at)'))
                 ->get();
                 return response()->json($statistiques,201);
@@ -329,7 +328,7 @@ class chambreController extends Controller
         elseif  ($TypeStat==4) // Statistique du mois en cours par semaine
         {
             $current_month = Carbon::now()->month;
-            $statistiques = DB::table('Chambres')
+            $statistiques = DB::table('chambres')
                 ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
                 ->join('streams', 'streams.carte_code', '=', 'cartes.code')
                 ->select(DB::raw('week(streams.created_at,1) as created_at'), 'chambres.id',
@@ -339,7 +338,7 @@ class chambreController extends Controller
                 DB::raw('min(streams.humedite) as min_hum')
                 )
                 ->where(DB::raw('month(streams.created_at)'), '=', $current_month)
-                //->where('Chambres.id','=',$id)
+                //->where('chambres.id','=',$id)
                 ->groupBy(DB::raw('week(streams.created_at,1)'))
                 ->get();
                 return response()->json($statistiques,201);
@@ -348,7 +347,7 @@ class chambreController extends Controller
         {
             DB::statement("SET lc_time_names = 'fr_FR'");
             $current_year = Carbon::now()->year;
-            $statistiques = DB::table('Chambres')
+            $statistiques = DB::table('chambres')
                 ->join('cartes', 'cartes.chambre_id', '=', 'chambres.id')
                 ->join('streams', 'streams.carte_code', '=', 'cartes.code')
                 ->select(DB::raw('MONTHNAME(streams.created_at) as created_at'), 
@@ -359,7 +358,7 @@ class chambreController extends Controller
                 DB::raw('min(streams.humedite) as min_hum')
                 )
                 ->where(DB::raw('year(streams.created_at)'),'=',$current_year )
-                // ->where('Chambres.id','=',$id)
+                // ->where('chambres.id','=',$id)
                 ->groupBy(DB::raw('month(streams.created_at)'))
                 ->get();
             return response()->json($statistiques,201);

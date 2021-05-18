@@ -26,8 +26,8 @@ export default {
     mounted() {
         // TODO requete le taux d'auccupation ou calculer le taux = 100* Taux réel/capacité max
         // TODO Récupérer les températeure et l'humidité de la dernière journées
-        this.interval = setInterval(this.getData, 60000);
-        axios.get("/api/chambres/capacite/"+this.id) 
+        this.interval =  setInterval(this.getData, 120000);
+         axios.get("/api/chambres/capacite/"+this.id) 
             .then(response => {
                 let statData=null
                 this.capacite= response.data
@@ -63,7 +63,7 @@ export default {
                         <div class="media">
                                 <span v-if="records.image">
     
-                                    <img :src="'/images/chambres/'+records.image" alt="" class="avatar-lg me-6" />
+                                    <img :src="'/images/uploads/chambres/'+records.image" alt="" class="avatar-lg me-6" />
                                 </span>
                                 <span v-else>
                                     <img src="/images/no-image.png" alt="" class="avatar-lg me-6" />

@@ -39,7 +39,7 @@ export default {
             </div>
 
         <div class="col-md-4">
-            <a href="#">
+            <a href="/varietes/list">
                 <b-card bg-variant="success" class="text-white-50">
                     <h5 class="mt-0 mb-4 text-white">
                         <i class="mdi mdi-check-all me-3"></i> Variétes
@@ -50,7 +50,7 @@ export default {
         <div class="col-md-4">
             <b-card bg-variant="info" class="text-white-50">
                 <h5 class="mt-0 mb-4 text-white">
-                    <i class="mdi mdi-alert-circle-outline me-3"></i> Alerts
+                    <i class="mdi mdi-alert-circle-outline me-3"></i> Maintenance & alerts
                 </h5>
             </b-card>
         </div>

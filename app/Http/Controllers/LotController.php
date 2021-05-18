@@ -49,29 +49,24 @@ class LotController extends Controller
             'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
     
         ]);
-       
-        $imageName='';
+
+        $imageName='';        
 
         if (!is_null($request->image)){
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/lots'), $imageName);
+            $request->image->move(public_path('images/uploads/lots'), $imageName);
         }
-       
-        Lot::updateOrCreate(
-            [
-              'id' => $request->id
-            ],
-            [
-              'numero' => $request->numero,
-              'capacite' => $request->capacite,
-              'image'=> $imageName,
-              'quantite'=>$request->quantite,
-              'variete_id'=>$request->variete_id,
-              'chambre_id'=>$request->chambre_id
+        
 
-            ]
-          );
-          return response()->json('Ajouté avec succes',201);
+        $lot=new Lot(); 
+        $lot->numero= $request->get('numero');
+        //$lot->capacite= $request->get('capacite');
+        $lot->quantite= $request->get('quantite');
+        $lot->variete_id= $request->get('variete_id');
+        $lot->chambre_id= $request->get('chambre_id');
+        $lot->image= $imageName;
+        $lot->save();
+        return response()->json('Ajouté avec succes',201);
         
     }
 
@@ -128,23 +123,17 @@ class LotController extends Controller
 
         if (!is_null($request->image)){
             if ($imageName) 
-                unlink("images/ lots/".$imageName);
+                unlink("images/uploads/lots/".$imageName);
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/lots'), $imageName);
-        } 
-        Lot::updateOrCreate(
-            [
-              'id' => $request->id
-            ],
-            [
-              'numero' => $request->numero,
-              'capacite' => $request->capacite,
-              'image'=> $imageName,
-              'quantite'=>$request->quantite,
-              'variete_id'=>$request->variete_id,
-              'chambre_id'=>$request->chambre_id
-            ]
-          );  
+            $request->image->move(public_path('images/uploads/lots'), $imageName);
+        }
+        $lot->numero= $request->get('numero');
+        //$lot->capacite= $request->get('capacite');
+        $lot->quantite= $request->get('quantite');
+        $lot->variete_id= $request->get('variete_id');
+        $lot->chambre_id= $request->get('chambre_id');
+        $lot->image= $imageName;
+        $lot->save();
         return response()->json('Modifié avec succes',201);
     }
 
@@ -160,10 +149,8 @@ class LotController extends Controller
         $lot = Lot::find($id);
         $image=$lot->image;
         if(!is_null($image))
-            unlink("images/lots/".$image);
+            unlink("images/uploads/lots/".$image);
         $lot->delete();
-        // TODO supprimer l'image dans le dossier       
-
         return response()->json([
             'message' => 'Supprimées avec succès!'
         ]);

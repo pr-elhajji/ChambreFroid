@@ -44,7 +44,7 @@ export default {
                 <ChambreInfo :id=this.id />
             </div>
             <div class="col-lg-8">
-                                <ChambreEtatTempHum :id=this.id />
+                <ChambreEtatTempHum :id=this.id />
 
             </div>
         </div>            

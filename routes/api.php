@@ -28,6 +28,7 @@ Route::post('/chambres/addlots/',['uses'=>'ChambreController@addLots']); //add l
 
 Route::get('/chambres/alerts/{id}/{interval}', ['uses' => 'ChambreController@getAlerts']); //alerte
 Route::get('/machines/temphumstat/{id}/{typestat}', ['uses'=> 'chambreController@getSate']); //stat TEmp Hum tdb
+Route::post('/chambres/updatechambres/{id}',['uses'=>'ChambreController@updateChambre']); //add lot
 
 
 //lots
@@ -37,6 +38,7 @@ Route::post('/lots/updatelots/{id}',['uses'=>'LotController@updateLot']); //add 
 
 //Varietes
 Route::resource('varietes', VarieteController::class);
+Route::post('/varietes/updatevarietes/{id}',['uses'=>'VarieteController@updateVariete']); //add lot
 
 //users
 Route::get('/users/profile/{id}', [App\Http\Controllers\UsersController::class, 'show']);

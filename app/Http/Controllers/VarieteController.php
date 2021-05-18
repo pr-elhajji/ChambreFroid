@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Variete;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 
 class VarieteController extends Controller
@@ -38,25 +40,50 @@ class VarieteController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'numero'     => ['required', 'string'],
-            'quatite'    => 'required',
-            'chambre_id' => 'required',
-            'variete_id' => 'required'
-        ]);
-        $image = $request->file('image');
 
-        if(!is_null($image)){
-            $filename = time() . '.' . $image->getClientOriginalExtension();
-            Image::make($image)->resize(300, 300)->save(storage_path('/uploads/' . $filename));
-            $data['image'] = $filename;
-        }
+        $rules = [
+           'libelle'        => 'required|string|unique:App\Models\Variete',
+           'temp_reference' => 'required',
+           'hum_reference'  => 'required',
+           'image'          => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+       ];
+       $messages = [
+           "libelle.unique"             => "La libellé doit être unique",
+           "temp_reference.required"    => "Champ obligatoire",
+           "hum_reference.required"     => "Champ obligatoire",
+           "image.mimes"                => "images accetpées:jpeg,png,jpg,gif,svg"
+       ];
+       $validator = Validator::make($request->all(), $rules, $messages);
+       if ($validator->fails()) {
+           return response($validator->errors(), 400);
+       }
+       $imageName='';
+       if (!is_null($request->image)){
+           $imageName = time() . '.' . $request->image->extension();
+           $request->image->move(public_path('images/uploads/varietes/'), $imageName);
+       }
+       $variete=new Variete();
+       $variete->libelle= $request->get('libelle');
+       $variete->temp_reference= $request->get('temp_reference');
+       $variete->hum_reference= $request->get('hum_reference');
+       $variete->image= $imageName;
+       $variete->save();
 
-        $data['date-entree']=Carbon::now();
-        $lot = Lot::create($data);
-        return response()->json($lot, 201);
+       /*Variete::updateOrCreate(
+           [
+                'id' => $request->id
+           ],
+           [
+             'libelle' => $request->libelle,
+             'temp_reference' => floatval($request->temp_reference),
+             'hum_reference' => $request->hum_reference,             
+             'image'=> $imageName
+           ]
+         );*/
 
-    }
+         return response()->json('Ajoutée avec succes',201);
+
+   }
 
     /**
      * Display the specified resource.
@@ -68,7 +95,6 @@ class VarieteController extends Controller
     {
         $variete = Variete::find($id);
         return response()->json($variete,201);
-
     }
 
     /**
@@ -94,6 +120,39 @@ class VarieteController extends Controller
         //
     }
 
+     /**
+     * update lot using post
+     */
+    public function updateVariete(Request $request, $id)
+    {
+
+        $this->validate($request, [
+           'libelle'        => 'required',
+           'temp_reference' => 'required',
+           'hum_reference'  => 'required',
+        ]); 
+
+        $variete = Variete::findOrFail($id);
+        $imageName=$variete->image;       
+
+        if (!is_null($request->image)){
+            if (!is_null($imageName))
+            {
+                unlink("images/uploads/varietes/".$imageName);
+            } 
+
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path("images/uploads/varietes/"), $imageName);
+        } 
+
+       $variete->libelle= $request->get('libelle');
+       $variete->temp_reference= $request->get('temp_reference');
+       $variete->hum_reference= $request->get('hum_reference');
+       $variete->image= $imageName;
+       $variete->save();  
+        return response()->json('Modifiée avec succes',201);
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -102,6 +161,13 @@ class VarieteController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $variete = Variete::find($id);
+        $image=$variete->image;
+        if(!is_null($image))
+            unlink("images/uploads/varietes/".$image);
+        $variete->delete();
+        return response()->json([
+        'message' => 'Supprimées avec succès!'
+        ]);
     }
 }
